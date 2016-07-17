@@ -10,7 +10,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import pandas as pd
-
+import sys
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -51,10 +51,15 @@ class Ui_MainWindow(object):
         # File navigation
         self.fileSystemModel = QtGui.QDirModel(self.splitter)
         self.fileSystemModel.setObjectName(_fromUtf8("fileSystemModel"))
-        index = self.fileSystemModel.index(QtCore.QDir.currentPath())
+        currentDir = str(QtCore.QDir.currentPath())
+        index = self.fileSystemModel.index(currentDir)
         self.treeView = QtGui.QTreeView(self.splitter)
         self.treeView.setObjectName(_fromUtf8("treeView"))
         self.treeView.setModel(self.fileSystemModel)
+        if len(sys.argv)>1:
+            self.currentFile = currentDir + '/' + sys.argv[1]
+        else:
+            self.currentFile = None
         self.recursive_expand( index, self.treeView )
         tVheader = self.treeView.header()
         for i in range(1,4): tVheader.hideSection(i)
@@ -153,7 +158,11 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        #if len(sys.argv) > 2:
+        if self.currentFile is not None:
+            print self.currentFile
+            self.treeView.setCurrentIndex( self.fileSystemModel.index( self.currentFile ) )
+            self.recursive_expand( index, self.treeView )
+            self.on_treeView_doubleClicked(  self.fileSystemModel.index( self.currentFile ) )
             
         
     def setupCsv(self):
@@ -168,7 +177,10 @@ class Ui_MainWindow(object):
     def setupH5(self):
         self.h5keys = self.hdfStore.keys()
         self.chosen_h5key = str( SelectDialog.SelectDialog.getOptions( self.h5keys ) )
-        self.orig_df = self.hdfStore[ self.chosen_h5key ]
+        if self.chosen_h5key == "":
+            self.orig_df = self.hdfStore[ self.h5keys[0] ]
+        else:
+            self.orig_df = self.hdfStore[ self.chosen_h5key ]
         self.setupCsv()
         
     def plotHist(self):
