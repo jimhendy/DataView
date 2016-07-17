@@ -130,12 +130,16 @@ class Ui_MainWindow(object):
 
         self.fileName = ""
         self.df = None
-
+        self.orig_df = None
+        self.filterStr = None
+        self.lastFilterStr = None
+        
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setupCsv(self):
+        self.data()
         self.columns = self.df.columns.tolist()
         self.xColSelect.clear()
         self.xColSelect.addItems( self.columns )
@@ -144,15 +148,15 @@ class Ui_MainWindow(object):
         self.updateTable()
         
     def plotHist(self):
-        if self.df is None: return
+        if self.data() is None: return
         plt.clf()
         col = str( self.xColSelect.currentText() )
         plt.hist( self.df[ col ].tolist() )
         plt.xlabel( col )
-        self.updatePlot()
+        self.canvas.draw()
         
     def plotScatter(self):
-        if self.df is None: return
+        if self.data() is None: return
         plt.clf()
         xCol = str( self.xColSelect.currentText() )
         yCol = str( self.yColSelect.currentText() )
@@ -160,18 +164,20 @@ class Ui_MainWindow(object):
         ax.scatter( self.df[ xCol ].tolist(), self.df[ yCol ].tolist(), label=xCol + ' v ' + yCol )
         ax.set_xlabel( xCol )
         ax.set_ylabel( yCol )
-        self.updatePlot()
-
-    def updatePlot(self, redraw=True):
-        #ax = plt.gca()
         self.canvas.draw()
-        #print ax.relim()
-        #print ax.autoscale_view()
-        ##self.canvas.update()
-        #print plt.xlim()
-        #print plt.ylim()
 
+    def data(self):
+        if self.orig_df is None: return None
+        if self.filterStr is not None:
+            if self.filterStr != self.lastFilterStr:
+                self.df = self.orig_df[ self.filterStr ]
+                self.lastFilterStr = self.filterStr
+        else:
+            self.df = self.orig_df
+        return True
+    
     def updateTable(self):
+        if self.data() is None: return
         header = self.columns
         tm = MyTableModel.MyTableModel(self.df.values, header, self)
         self.tableView.setModel(tm)
@@ -183,9 +189,7 @@ class Ui_MainWindow(object):
 
     def plotZoom(self): self.toolbar.zoom()
     def plotPan(self): self.toolbar.pan()
-    def plotHome(self):
-        self.toolbar.home()
-        #self.updatePlot(False)
+    def plotHome(self): self.toolbar.home()
         
     def on_treeView_doubleClicked(self, index ):
         fileName = str(index.model().filePath(index))
@@ -194,7 +198,7 @@ class Ui_MainWindow(object):
             self.fileName = fileName
             self.isCsv = True
             self.isH5 = False
-            self.df = pd.read_csv( fileName )
+            self.orig_df = pd.read_csv( fileName )
             self.setupCsv()
         elif fileName.endswith(".h5"):
             self.fileName = fileName
