@@ -11,9 +11,11 @@ import pandas as pd
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
 import MyTableModel
+plt.style.use('ggplot')
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -64,6 +66,8 @@ class Ui_MainWindow(object):
         self.figure = plt.figure(figsize=(15,5))    
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setObjectName(_fromUtf8("canvas"))
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar.hide()
         self.verticalLayout_2.addWidget(self.canvas)
 
         # Plot buttons
@@ -77,6 +81,18 @@ class Ui_MainWindow(object):
         self.btnHist.setObjectName(_fromUtf8("btnHist"))
         self.btnHist.clicked.connect(self.plotHist)
         self.horizontalLayout.addWidget(self.btnHist)
+        self.btnZoom = QtGui.QPushButton(self.tab)
+        self.btnZoom.setObjectName(_fromUtf8("btnZoom"))
+        self.btnZoom.clicked.connect(self.plotZoom)
+        self.horizontalLayout.addWidget(self.btnZoom)
+        self.btnPan = QtGui.QPushButton(self.tab)
+        self.btnPan.setObjectName(_fromUtf8("btnPan"))
+        self.btnPan.clicked.connect(self.plotPan)
+        self.horizontalLayout.addWidget(self.btnPan)
+        self.btnHome = QtGui.QPushButton(self.tab)
+        self.btnHome.setObjectName(_fromUtf8("btnHome"))
+        self.btnHome.clicked.connect(self.plotHome)
+        self.horizontalLayout.addWidget(self.btnHome)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         # Column Selectors
@@ -129,7 +145,7 @@ class Ui_MainWindow(object):
         
     def plotHist(self):
         if self.df is None: return
-        plt.cla()
+        plt.clf()
         col = str( self.xColSelect.currentText() )
         plt.hist( self.df[ col ].tolist() )
         plt.xlabel( col )
@@ -137,42 +153,39 @@ class Ui_MainWindow(object):
         
     def plotScatter(self):
         if self.df is None: return
-        plt.cla()
+        plt.clf()
         xCol = str( self.xColSelect.currentText() )
         yCol = str( self.yColSelect.currentText() )
-        plt.scatter( self.df[ xCol ].tolist(), self.df[ yCol ].tolist(), label=xCol + ' v ' + yCol )
-        plt.xlabel( xCol )
-        plt.ylabel( yCol )
+        ax = plt.gca()
+        ax.scatter( self.df[ xCol ].tolist(), self.df[ yCol ].tolist(), label=xCol + ' v ' + yCol )
+        ax.set_xlabel( xCol )
+        ax.set_ylabel( yCol )
         self.updatePlot()
 
-    def updatePlot(self):
+    def updatePlot(self, redraw=True):
+        #ax = plt.gca()
         self.canvas.draw()
-        ax = plt.gca()
-        ax.relim()
-        ax.autoscale_view()
-        self.canvas.update()        
+        #print ax.relim()
+        #print ax.autoscale_view()
+        ##self.canvas.update()
+        #print plt.xlim()
+        #print plt.ylim()
 
     def updateTable(self):
-        i = 0
-        print i; i += 1
         header = self.columns
-        print i; i += 1
-        tm = MyTableModel.MyTableModel(self.df, header, self)
-        print i; i += 1
+        tm = MyTableModel.MyTableModel(self.df.values, header, self)
         self.tableView.setModel(tm)
-        print i; i += 1
         vh = self.tableView.verticalHeader()
-        print i; i += 1
         vh.setVisible(False)
-        print i; i += 1
         hh = self.tableView.horizontalHeader()
-        print i; i += 1
         hh.setStretchLastSection(True)
-        print i; i += 1
-        #self.tableView.resizeColumnsToContents(0)
-        print 0
         self.tableView.setSortingEnabled(True)
-        print 1
+
+    def plotZoom(self): self.toolbar.zoom()
+    def plotPan(self): self.toolbar.pan()
+    def plotHome(self):
+        self.toolbar.home()
+        #self.updatePlot(False)
         
     def on_treeView_doubleClicked(self, index ):
         fileName = str(index.model().filePath(index))
@@ -194,6 +207,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.btnScatter.setText(_translate("MainWindow", "Scatter", None))
         self.btnHist.setText(_translate("MainWindow", "Hist", None))
+        self.btnZoom.setText(_translate("MainWindow", "Zoom", None))
+        self.btnPan.setText(_translate("MainWindow", "Pan", None))
+        self.btnHome.setText(_translate("MainWindow", "Reset", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Plot", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Data", None))
 
