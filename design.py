@@ -17,6 +17,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 
 import MyTableModel
+import SelectDialog
 plt.style.use('ggplot')
 
 try:
@@ -35,7 +36,7 @@ except AttributeError:
     
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName(_fromUtf8("MainWindow"))
+        MainWindow.setObjectName(_fromUtf8("Data View"))
         #MainWindow.resize(539, 600)
         
         self.centralwidget = QtGui.QWidget(MainWindow)
@@ -152,6 +153,9 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        #if len(sys.argv) > 2:
+            
+        
     def setupCsv(self):
         self.data()
         self.columns = self.df.columns.tolist()
@@ -161,6 +165,12 @@ class Ui_MainWindow(object):
         self.yColSelect.addItems( self.columns )
         self.updateTable()
 
+    def setupH5(self):
+        self.h5keys = self.hdfStore.keys()
+        self.chosen_h5key = str( SelectDialog.SelectDialog.getOptions( self.h5keys ) )
+        self.orig_df = self.hdfStore[ self.chosen_h5key ]
+        self.setupCsv()
+        
     def plotHist(self):
         if self.data() is None: return
         plt.clf()
@@ -232,8 +242,8 @@ class Ui_MainWindow(object):
             self.fileName = fileName
             self.isCsv = False
             self.isH5 = True
-            self.hdfStore = pd.HDFStore( fileName )
-        
+            self.hdfStore = pd.HDFStore( fileName, 'r' )
+            self.setupH5()
         
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
