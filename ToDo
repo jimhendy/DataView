@@ -1,6 +1,6 @@
-Load data for either csv or h5 files
+Ability to save plot to png or similat
 Show matplotlib.pyplot plots in plot tab (hist or scatter or line for timeseries type)
 Allow plots to not overwrite plotting canvas (??)
-Allow max and min to be manually set
+Allow max, n_bins and min to be manually set
 Highcharts style point highlighting (highcharts may make app too cpu intensive)
 Allow column types to be changed (specifically for datetimes)

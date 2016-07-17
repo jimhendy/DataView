@@ -10,7 +10,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import pandas as pd
-import sys
+import sys, math
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -176,7 +176,10 @@ class Ui_MainWindow(object):
 
     def setupH5(self):
         self.h5keys = self.hdfStore.keys()
-        self.chosen_h5key = str( SelectDialog.SelectDialog.getOptions( self.h5keys ) )
+        if len(self.h5keys) > 1:
+            self.chosen_h5key = str( SelectDialog.SelectDialog.getOptions( self.h5keys ) )
+        else:
+            self.chosen_h5key = ""
         if self.chosen_h5key == "":
             self.orig_df = self.hdfStore[ self.h5keys[0] ]
         else:
