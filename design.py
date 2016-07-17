@@ -7,6 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 import pandas as pd
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -38,6 +40,7 @@ class Ui_MainWindow(object):
         
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.splitter = QtGui.QSplitter(self.centralwidget)
@@ -116,7 +119,18 @@ class Ui_MainWindow(object):
         self.tableView.setObjectName(_fromUtf8("tableView"))
         self.verticalLayout_3.addWidget(self.tableView)
         
-
+        # Filter text entry
+        self.filterHorLayout = QtGui.QHBoxLayout()
+        self.filterHorLayout.setObjectName(_fromUtf8("filterHorLayout"))
+        self.filterBox = QtGui.QLineEdit(self.centralwidget)
+        self.filterBox.setObjectName(_fromUtf8("filterBox"))
+        self.btnFilter = QtGui.QPushButton(self.centralwidget)
+        self.btnFilter.setObjectName(_fromUtf8("btnFilter"))
+        self.btnFilter.clicked.connect(self.updateTable)
+        self.filterHorLayout.addWidget(self.filterBox)
+        self.filterHorLayout.addWidget(self.btnFilter)
+        self.verticalLayout.addLayout(self.filterHorLayout)
+        
         # Setup
         self.treeView.raise_()
         self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
@@ -146,7 +160,7 @@ class Ui_MainWindow(object):
         self.yColSelect.clear()
         self.yColSelect.addItems( self.columns )
         self.updateTable()
-        
+
     def plotHist(self):
         if self.data() is None: return
         plt.clf()
@@ -168,10 +182,23 @@ class Ui_MainWindow(object):
 
     def data(self):
         if self.orig_df is None: return None
-        if self.filterStr is not None:
+        self.filterStr = str(self.filterBox.text())
+        if self.filterStr is not None and self.filterStr != "":
             if self.filterStr != self.lastFilterStr:
-                self.df = self.orig_df[ self.filterStr ]
-                self.lastFilterStr = self.filterStr
+                try:
+                    exec("self.df = self.orig_df[" +  self.filterStr.replace("df","self.orig_df") + "]" )
+                    self.lastFilterStr = self.filterStr
+                except Exception as e:
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setText("Filtering failed")
+                    msg.setWindowTitle("Error")
+                    msg.setDetailedText( str(e) )
+                    msg.setStandardButtons(QMessageBox.Ok)
+                    msg.exec_()
+                    pass
+                pass
+            pass
         else:
             self.df = self.orig_df
         return True
@@ -186,6 +213,7 @@ class Ui_MainWindow(object):
         hh = self.tableView.horizontalHeader()
         hh.setStretchLastSection(True)
         self.tableView.setSortingEnabled(True)
+        self.tableView.sortByColumn(0);
 
     def plotZoom(self): self.toolbar.zoom()
     def plotPan(self): self.toolbar.pan()
@@ -214,6 +242,7 @@ class Ui_MainWindow(object):
         self.btnZoom.setText(_translate("MainWindow", "Zoom", None))
         self.btnPan.setText(_translate("MainWindow", "Pan", None))
         self.btnHome.setText(_translate("MainWindow", "Reset", None))
+        self.btnFilter.setText(_translate("MainWindow","Update Table", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Plot", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Data", None))
 
