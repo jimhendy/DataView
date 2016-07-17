@@ -1,0 +1,5 @@
+Load data for either csv or h5 files
+Allow filtering with simple text bar that applies pandas filter
+Show data in an excel type table in data tab
+Show matplotlib.pyplot plots in plot tab (hist or scatter or line for timeseries type)
+Two column filters (html select types (comboBox?)) to select available columns (allow column to be plotted against itself)
