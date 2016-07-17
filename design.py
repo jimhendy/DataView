@@ -13,6 +13,8 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
+import MyTableModel
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -26,7 +28,7 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
-
+    
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
@@ -52,6 +54,7 @@ class Ui_MainWindow(object):
         for i in range(1,4): tVheader.hideSection(i)
         self.treeView.doubleClicked.connect(self.on_treeView_doubleClicked)
 
+        # Plots tab
         self.tabWidget = QtGui.QTabWidget(self.splitter)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.tab = QtGui.QWidget()
@@ -68,9 +71,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout_plotButtons"))
         self.btnScatter = QtGui.QPushButton(self.tab)
         self.btnScatter.setObjectName(_fromUtf8("btnScatter"))
+        self.btnScatter.clicked.connect(self.plotScatter)
         self.horizontalLayout.addWidget(self.btnScatter)
         self.btnHist = QtGui.QPushButton(self.tab)
         self.btnHist.setObjectName(_fromUtf8("btnHist"))
+        self.btnHist.clicked.connect(self.plotHist)
         self.horizontalLayout.addWidget(self.btnHist)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
@@ -85,10 +90,18 @@ class Ui_MainWindow(object):
         self.horizontalLayout_columnSelectors.addWidget(self.yColSelect)
         self.verticalLayout_2.addLayout(self.horizontalLayout_columnSelectors)
         
-        
+        # Data tab
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.tab_2)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.tableView = QtGui.QTableView(self.tab_2)
+        self.tableView.setObjectName(_fromUtf8("tableView"))
+        self.verticalLayout_3.addWidget(self.tableView)
+        
+
+        # Setup
         self.treeView.raise_()
         self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
         self.verticalLayout.addWidget(self.splitter)
@@ -98,18 +111,68 @@ class Ui_MainWindow(object):
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
+
         self.fileName = ""
+        self.df = None
+
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setupCsv(self):
         self.columns = self.df.columns.tolist()
+        self.xColSelect.clear()
         self.xColSelect.addItems( self.columns )
+        self.yColSelect.clear()
         self.yColSelect.addItems( self.columns )
-        plt.scatter( self.df.B.values, self.df.B.values )
+        self.updateTable()
+        
+    def plotHist(self):
+        if self.df is None: return
+        plt.cla()
+        col = str( self.xColSelect.currentText() )
+        plt.hist( self.df[ col ].tolist() )
+        plt.xlabel( col )
+        self.updatePlot()
+        
+    def plotScatter(self):
+        if self.df is None: return
+        plt.cla()
+        xCol = str( self.xColSelect.currentText() )
+        yCol = str( self.yColSelect.currentText() )
+        plt.scatter( self.df[ xCol ].tolist(), self.df[ yCol ].tolist(), label=xCol + ' v ' + yCol )
+        plt.xlabel( xCol )
+        plt.ylabel( yCol )
+        self.updatePlot()
+
+    def updatePlot(self):
         self.canvas.draw()
-        pass
+        ax = plt.gca()
+        ax.relim()
+        ax.autoscale_view()
+        self.canvas.update()        
+
+    def updateTable(self):
+        i = 0
+        print i; i += 1
+        header = self.columns
+        print i; i += 1
+        tm = MyTableModel.MyTableModel(self.df, header, self)
+        print i; i += 1
+        self.tableView.setModel(tm)
+        print i; i += 1
+        vh = self.tableView.verticalHeader()
+        print i; i += 1
+        vh.setVisible(False)
+        print i; i += 1
+        hh = self.tableView.horizontalHeader()
+        print i; i += 1
+        hh.setStretchLastSection(True)
+        print i; i += 1
+        #self.tableView.resizeColumnsToContents(0)
+        print 0
+        self.tableView.setSortingEnabled(True)
+        print 1
         
     def on_treeView_doubleClicked(self, index ):
         fileName = str(index.model().filePath(index))
