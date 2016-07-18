@@ -104,6 +104,29 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.btnHome)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
+        # Bin, Max and Min spinBoxes
+        self.horizontalLayout_plotOptions = QtGui.QHBoxLayout()
+        self.horizontalLayout_plotOptions.setObjectName(_fromUtf8("horizontalLayout_plotOptions"))
+        self.binsLabel = QtGui.QLabel(self.tab)
+        self.binsLabel.setText("Bins: ")
+        self.horizontalLayout_plotOptions.addWidget( self.binsLabel )
+        self.nBinsSpin = QtGui.QSpinBox(self.tab)
+        self.nBinsSpin.setObjectName(_fromUtf8("nBinsSpin"))
+        self.horizontalLayout_plotOptions.addWidget( self.nBinsSpin )
+        self.minLabel = QtGui.QLabel(self.tab)
+        self.minLabel.setText("Min: ")
+        self.horizontalLayout_plotOptions.addWidget( self.minLabel )
+        self.nMinSpin = QtGui.QSpinBox(self.tab)
+        self.nMinSpin.setObjectName(_fromUtf8("nMinSpin"))
+        self.horizontalLayout_plotOptions.addWidget( self.nMinSpin )
+        self.maxLabel = QtGui.QLabel(self.tab)
+        self.maxLabel.setText("Max: ")
+        self.horizontalLayout_plotOptions.addWidget( self.maxLabel )
+        self.nMaxSpin = QtGui.QSpinBox(self.tab)
+        self.nMaxSpin.setObjectName(_fromUtf8("nMaxSpin"))
+        self.horizontalLayout_plotOptions.addWidget( self.nMaxSpin )
+        self.verticalLayout_2.addLayout(self.horizontalLayout_plotOptions )
+        
         # Column Selectors
         self.horizontalLayout_columnSelectors = QtGui.QHBoxLayout()
         self.horizontalLayout_columnSelectors.setObjectName(_fromUtf8("horizontalLayout_columnSelectors"))
@@ -114,6 +137,8 @@ class Ui_MainWindow(object):
         self.yColSelect.setObjectName(_fromUtf8("yColSelect"))
         self.horizontalLayout_columnSelectors.addWidget(self.yColSelect)
         self.verticalLayout_2.addLayout(self.horizontalLayout_columnSelectors)
+
+
         
         # Data tab
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
