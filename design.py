@@ -82,14 +82,14 @@ class Ui_MainWindow(object):
         # Plot buttons
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout_plotButtons"))
-        self.btnScatter = QtGui.QPushButton(self.tab)
-        self.btnScatter.setObjectName(_fromUtf8("btnScatter"))
-        self.btnScatter.clicked.connect(self.plotScatter)
-        self.horizontalLayout.addWidget(self.btnScatter)
-        self.btnHist = QtGui.QPushButton(self.tab)
-        self.btnHist.setObjectName(_fromUtf8("btnHist"))
-        self.btnHist.clicked.connect(self.plotHist)
-        self.horizontalLayout.addWidget(self.btnHist)
+        self.plotTypeCombo = QtGui.QComboBox(self.tab)
+        self.plotTypeCombo.setObjectName(_fromUtf8("plotTypeCombo"))
+        self.plotTypeCombo.currentIndexChanged.connect(self.ChangePlotType)
+        self.horizontalLayout.addWidget(self.plotTypeCombo)
+        self.btnPlot = QtGui.QPushButton(self.tab)
+        self.btnPlot.setObjectName(_fromUtf8("btnPlot"))
+        self.btnPlot.clicked.connect(self.drawPlot)
+        self.horizontalLayout.addWidget(self.btnPlot)
         self.btnZoom = QtGui.QPushButton(self.tab)
         self.btnZoom.setObjectName(_fromUtf8("btnZoom"))
         self.btnZoom.clicked.connect(self.plotZoom)
@@ -104,41 +104,76 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.btnHome)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        # Bin, Max and Min spinBoxes
-        self.horizontalLayout_plotOptions = QtGui.QHBoxLayout()
-        self.horizontalLayout_plotOptions.setObjectName(_fromUtf8("horizontalLayout_plotOptions"))
-        self.binsLabel = QtGui.QLabel(self.tab)
-        self.binsLabel.setText("Bins: ")
-        self.horizontalLayout_plotOptions.addWidget( self.binsLabel )
-        self.nBinsSpin = QtGui.QSpinBox(self.tab)
-        self.nBinsSpin.setObjectName(_fromUtf8("nBinsSpin"))
-        self.horizontalLayout_plotOptions.addWidget( self.nBinsSpin )
-        self.minLabel = QtGui.QLabel(self.tab)
-        self.minLabel.setText("Min: ")
-        self.horizontalLayout_plotOptions.addWidget( self.minLabel )
-        self.nMinSpin = QtGui.QSpinBox(self.tab)
-        self.nMinSpin.setObjectName(_fromUtf8("nMinSpin"))
-        self.horizontalLayout_plotOptions.addWidget( self.nMinSpin )
-        self.maxLabel = QtGui.QLabel(self.tab)
-        self.maxLabel.setText("Max: ")
-        self.horizontalLayout_plotOptions.addWidget( self.maxLabel )
-        self.nMaxSpin = QtGui.QSpinBox(self.tab)
-        self.nMaxSpin.setObjectName(_fromUtf8("nMaxSpin"))
-        self.horizontalLayout_plotOptions.addWidget( self.nMaxSpin )
-        self.verticalLayout_2.addLayout(self.horizontalLayout_plotOptions )
-        
-        # Column Selectors
-        self.horizontalLayout_columnSelectors = QtGui.QHBoxLayout()
-        self.horizontalLayout_columnSelectors.setObjectName(_fromUtf8("horizontalLayout_columnSelectors"))
+        # x axis options
+        self.horizontalLayout_xAxis = QtGui.QHBoxLayout()
+        self.horizontalLayout_xAxis.setObjectName(_fromUtf8("horizontalLayout_xAxis"))
         self.xColSelect = QtGui.QComboBox(self.tab)
         self.xColSelect.setObjectName(_fromUtf8("xColSelect"))
-        self.horizontalLayout_columnSelectors.addWidget(self.xColSelect)
+        self.horizontalLayout_xAxis.addWidget(self.xColSelect)
+        self.horizontalLayout_xAxis.setStretchFactor(self.xColSelect,2)
+        self.xbinsLabel = QtGui.QLabel(self.tab)
+        self.xbinsLabel.setText("X Bins:")
+        self.horizontalLayout_xAxis.addWidget( self.xbinsLabel )
+        self.xnBinsSpin = QtGui.QSpinBox(self.tab)
+        self.xnBinsSpin.setObjectName(_fromUtf8("xnBinsSpin"))
+        self.horizontalLayout_xAxis.addWidget( self.xnBinsSpin )
+        self.horizontalLayout_xAxis.setStretchFactor(self.xnBinsSpin,2)
+        self.xminLabel = QtGui.QLabel(self.tab)
+        self.xminLabel.setText("X Min:")
+        self.horizontalLayout_xAxis.addWidget( self.xminLabel )
+        self.xnMinSpin = QtGui.QSpinBox(self.tab)
+        self.xnMinSpin.setObjectName(_fromUtf8("xnMinSpin"))
+        self.horizontalLayout_xAxis.addWidget( self.xnMinSpin )
+        self.horizontalLayout_xAxis.setStretchFactor(self.xnMinSpin,2)
+        self.xmaxLabel = QtGui.QLabel(self.tab)
+        self.xmaxLabel.setText("X Max:")
+        self.horizontalLayout_xAxis.addWidget( self.xmaxLabel )
+        self.xnMaxSpin = QtGui.QSpinBox(self.tab)
+        self.xnMaxSpin.setObjectName(_fromUtf8("xnMaxSpin"))
+        self.horizontalLayout_xAxis.addWidget( self.xnMaxSpin )
+        self.horizontalLayout_xAxis.setStretchFactor(self.xnMaxSpin,2)
+        self.xTypeCombo = QtGui.QComboBox(self.tab)
+        self.xTypeCombo.setObjectName(_fromUtf8("xTypeCombo"))
+        self.horizontalLayout_xAxis.addWidget(self.xTypeCombo)
+        self.horizontalLayout_xAxis.setStretchFactor(self.xTypeCombo,2)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_xAxis )
+        
+        # y axis options
+        self.horizontalLayout_yAxis = QtGui.QHBoxLayout()
+        self.horizontalLayout_yAxis.setObjectName(_fromUtf8("horizontalLayout_yAxis"))
         self.yColSelect = QtGui.QComboBox(self.tab)
         self.yColSelect.setObjectName(_fromUtf8("yColSelect"))
-        self.horizontalLayout_columnSelectors.addWidget(self.yColSelect)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_columnSelectors)
-
-
+        self.horizontalLayout_yAxis.addWidget(self.yColSelect)
+        self.horizontalLayout_yAxis.setStretchFactor(self.yColSelect,2)
+        self.ybinsLabel = QtGui.QLabel(self.tab)
+        self.ybinsLabel.setText("Y Bins:")
+        self.horizontalLayout_yAxis.addWidget( self.ybinsLabel )
+        self.ynBinsSpin = QtGui.QSpinBox(self.tab)
+        self.ynBinsSpin.setObjectName(_fromUtf8("ynBinsSpin"))
+        self.horizontalLayout_yAxis.addWidget( self.ynBinsSpin )
+        self.horizontalLayout_yAxis.setStretchFactor(self.ynBinsSpin,2)
+        self.yminLabel = QtGui.QLabel(self.tab)
+        self.yminLabel.setText("Y Min:")
+        self.horizontalLayout_yAxis.addWidget( self.yminLabel )
+        self.ynMinSpin = QtGui.QSpinBox(self.tab)
+        self.ynMinSpin.setObjectName(_fromUtf8("ynMinSpin"))
+        self.horizontalLayout_yAxis.addWidget( self.ynMinSpin )
+        self.horizontalLayout_yAxis.setStretchFactor(self.ynMinSpin,2)
+        self.ymaxLabel = QtGui.QLabel(self.tab)
+        self.ymaxLabel.setText("Y Max:")
+        self.horizontalLayout_yAxis.addWidget( self.ymaxLabel )
+        self.ynMaxSpin = QtGui.QSpinBox(self.tab)
+        self.ynMaxSpin.setObjectName(_fromUtf8("ynMaxSpin"))
+        self.horizontalLayout_yAxis.addWidget( self.ynMaxSpin )
+        self.horizontalLayout_yAxis.setStretchFactor(self.ynMaxSpin,2)
+        self.yTypeCombo = QtGui.QComboBox(self.tab)
+        self.yTypeCombo.setObjectName(_fromUtf8("yTypeCombo"))
+        self.horizontalLayout_yAxis.addWidget(self.yTypeCombo)
+        self.horizontalLayout_yAxis.setStretchFactor(self.yTypeCombo,2)
+        #self.verticalLayout_2.addLayout(self.horizontalLayout_yAxis )
+        self.yAxisItems = [ self.yColSelect, self.ybinsLabel, self.ynBinsSpin, self.yminLabel, self.ynMinSpin,
+                            self.ymaxLabel, self.ynMaxSpin, self.yTypeCombo ]
+        [ y.hide() for y in self.yAxisItems ]
         
         # Data tab
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
@@ -173,6 +208,9 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
 
+        self.plotTypeCombo.addItems( ['Scatter','Hist'] )
+        
+        
         self.fileName = ""
         self.df = None
         self.orig_df = None
@@ -287,9 +325,10 @@ class Ui_MainWindow(object):
         
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.btnScatter.setText(_translate("MainWindow", "Scatter", None))
-        self.btnHist.setText(_translate("MainWindow", "Hist", None))
+        #self.btnScatter.setText(_translate("MainWindow", "Scatter", None))
+        #self.btnHist.setText(_translate("MainWindow", "Hist", None))
         self.btnZoom.setText(_translate("MainWindow", "Zoom", None))
+        self.btnPlot.setText(_translate("MainWindow", "Draw", None))
         self.btnPan.setText(_translate("MainWindow", "Pan", None))
         self.btnHome.setText(_translate("MainWindow", "Reset", None))
         self.btnFilter.setText(_translate("MainWindow","Update Table", None))
@@ -302,3 +341,23 @@ class Ui_MainWindow(object):
         if parent != index:
             self.recursive_expand( parent, treeView )
 
+
+    def drawPlot(self):
+        pType = self.plotTypeCombo.currentText()
+        if pType == 'Scatter': self.plotScatter()
+        elif pType == 'Hist': self.plotHist()
+
+    def ChangePlotType(self):
+        pType = self.plotTypeCombo.currentText()
+        if pType == 'Scatter':
+            [ x.hide() for x in self.yAxisItems ]
+            for i in range( self.verticalLayout_2.count() ):
+                if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis:
+                    self.verticalLayout_2.removeItem( self.horizontalLayout_yAxis )
+        else:
+            [ x.show() for x in self.yAxisItems ]
+            found = False
+            for i in range( self.verticalLayout_2.count() ):
+                if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis: found=True
+            if not found: self.verticalLayout_2.addLayout( self.horizontalLayout_yAxis )
+        self.verticalLayout_2.update()

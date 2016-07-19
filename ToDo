@@ -1,4 +1,12 @@
-Ability to save plot to png or similat
+Add combo box selectors on top of each column in table like excel
+Add combo box on top of each table column to change data type
+Add 'as Datetime' button for x and y in plotting
+Change plot selector to combobox and 'draw' button which adds/removes y axis options
+combox_plot_type draw zoom pan home
+x_combo x_binx x_max x_min x_typeSelector
+(y_combo y_bins y_max y_min y_typeSelector )
+
+Ability to save plot to png or similar
 Show matplotlib.pyplot plots in plot tab (hist or scatter or line for timeseries type)
 Allow plots to not overwrite plotting canvas (??)
 Allow max, n_bins and min to be manually set
