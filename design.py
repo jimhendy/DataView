@@ -208,7 +208,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
 
-        self.plotTypeCombo.addItems( ['Scatter','Hist'] )
+        self.plotTypeCombo.addItems( ['Scatter','Line','Hist','Hist2d'] )
         
         
         self.fileName = ""
@@ -349,15 +349,15 @@ class Ui_MainWindow(object):
 
     def ChangePlotType(self):
         pType = self.plotTypeCombo.currentText()
-        if pType == 'Scatter':
-            [ x.hide() for x in self.yAxisItems ]
-            for i in range( self.verticalLayout_2.count() ):
-                if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis:
-                    self.verticalLayout_2.removeItem( self.horizontalLayout_yAxis )
-        else:
+        if pType == 'Scatter' or pType == 'Line' or pType == 'Hist2d':
             [ x.show() for x in self.yAxisItems ]
             found = False
             for i in range( self.verticalLayout_2.count() ):
                 if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis: found=True
             if not found: self.verticalLayout_2.addLayout( self.horizontalLayout_yAxis )
+        else:
+            [ x.hide() for x in self.yAxisItems ]
+            for i in range( self.verticalLayout_2.count() ):
+                if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis:
+                    self.verticalLayout_2.removeItem( self.horizontalLayout_yAxis )
         self.verticalLayout_2.update()
