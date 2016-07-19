@@ -109,6 +109,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_xAxis.setObjectName(_fromUtf8("horizontalLayout_xAxis"))
         self.xColSelect = QtGui.QComboBox(self.tab)
         self.xColSelect.setObjectName(_fromUtf8("xColSelect"))
+        self.xColSelect.currentIndexChanged.connect(self.ResetUserSelections)
         self.horizontalLayout_xAxis.addWidget(self.xColSelect)
         self.horizontalLayout_xAxis.setStretchFactor(self.xColSelect,2)
         self.xbinsLabel = QtGui.QLabel(self.tab)
@@ -116,20 +117,26 @@ class Ui_MainWindow(object):
         self.horizontalLayout_xAxis.addWidget( self.xbinsLabel )
         self.xnBinsSpin = QtGui.QSpinBox(self.tab)
         self.xnBinsSpin.setObjectName(_fromUtf8("xnBinsSpin"))
+        self.xnBinsSpin.valueChanged.connect(self.XChangeBinning)
+        self.xnBinsSpin.setRange(1,10000)
         self.horizontalLayout_xAxis.addWidget( self.xnBinsSpin )
         self.horizontalLayout_xAxis.setStretchFactor(self.xnBinsSpin,2)
         self.xminLabel = QtGui.QLabel(self.tab)
         self.xminLabel.setText("X Min:")
         self.horizontalLayout_xAxis.addWidget( self.xminLabel )
-        self.xnMinSpin = QtGui.QSpinBox(self.tab)
+        self.xnMinSpin = QtGui.QDoubleSpinBox(self.tab)
         self.xnMinSpin.setObjectName(_fromUtf8("xnMinSpin"))
+        self.xnMinSpin.valueChanged.connect(self.XChangeMin)
+        self.xnMinSpin.setRange( -1e20, 1e20 )
         self.horizontalLayout_xAxis.addWidget( self.xnMinSpin )
         self.horizontalLayout_xAxis.setStretchFactor(self.xnMinSpin,2)
         self.xmaxLabel = QtGui.QLabel(self.tab)
         self.xmaxLabel.setText("X Max:")
         self.horizontalLayout_xAxis.addWidget( self.xmaxLabel )
-        self.xnMaxSpin = QtGui.QSpinBox(self.tab)
+        self.xnMaxSpin = QtGui.QDoubleSpinBox(self.tab)
         self.xnMaxSpin.setObjectName(_fromUtf8("xnMaxSpin"))
+        self.xnMaxSpin.setRange( -1e20, 1e20 )
+        self.xnMaxSpin.valueChanged.connect(self.XChangeMax)
         self.horizontalLayout_xAxis.addWidget( self.xnMaxSpin )
         self.horizontalLayout_xAxis.setStretchFactor(self.xnMaxSpin,2)
         self.xTypeCombo = QtGui.QComboBox(self.tab)
@@ -143,6 +150,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_yAxis.setObjectName(_fromUtf8("horizontalLayout_yAxis"))
         self.yColSelect = QtGui.QComboBox(self.tab)
         self.yColSelect.setObjectName(_fromUtf8("yColSelect"))
+        self.yColSelect.currentIndexChanged.connect(self.ResetUserSelections)
         self.horizontalLayout_yAxis.addWidget(self.yColSelect)
         self.horizontalLayout_yAxis.setStretchFactor(self.yColSelect,2)
         self.ybinsLabel = QtGui.QLabel(self.tab)
@@ -150,20 +158,25 @@ class Ui_MainWindow(object):
         self.horizontalLayout_yAxis.addWidget( self.ybinsLabel )
         self.ynBinsSpin = QtGui.QSpinBox(self.tab)
         self.ynBinsSpin.setObjectName(_fromUtf8("ynBinsSpin"))
+        self.ynBinsSpin.valueChanged.connect(self.YChangeBinning)
         self.horizontalLayout_yAxis.addWidget( self.ynBinsSpin )
         self.horizontalLayout_yAxis.setStretchFactor(self.ynBinsSpin,2)
         self.yminLabel = QtGui.QLabel(self.tab)
         self.yminLabel.setText("Y Min:")
         self.horizontalLayout_yAxis.addWidget( self.yminLabel )
-        self.ynMinSpin = QtGui.QSpinBox(self.tab)
+        self.ynMinSpin = QtGui.QDoubleSpinBox(self.tab)
         self.ynMinSpin.setObjectName(_fromUtf8("ynMinSpin"))
+        self.ynMinSpin.setRange( -1e20, 1e20 )
+        self.ynMinSpin.valueChanged.connect(self.YChangeMin)
         self.horizontalLayout_yAxis.addWidget( self.ynMinSpin )
         self.horizontalLayout_yAxis.setStretchFactor(self.ynMinSpin,2)
         self.ymaxLabel = QtGui.QLabel(self.tab)
         self.ymaxLabel.setText("Y Max:")
         self.horizontalLayout_yAxis.addWidget( self.ymaxLabel )
-        self.ynMaxSpin = QtGui.QSpinBox(self.tab)
+        self.ynMaxSpin = QtGui.QDoubleSpinBox(self.tab)
         self.ynMaxSpin.setObjectName(_fromUtf8("ynMaxSpin"))
+        self.ynMaxSpin.setRange( -1e20, 1e20 )
+        self.ynMaxSpin.valueChanged.connect(self.YChangeMax)
         self.horizontalLayout_yAxis.addWidget( self.ynMaxSpin )
         self.horizontalLayout_yAxis.setStretchFactor(self.ynMaxSpin,2)
         self.yTypeCombo = QtGui.QComboBox(self.tab)
@@ -173,7 +186,8 @@ class Ui_MainWindow(object):
         #self.verticalLayout_2.addLayout(self.horizontalLayout_yAxis )
         self.yAxisItems = [ self.yColSelect, self.ybinsLabel, self.ynBinsSpin, self.yminLabel, self.ynMinSpin,
                             self.ymaxLabel, self.ynMaxSpin, self.yTypeCombo ]
-        [ y.hide() for y in self.yAxisItems ]
+
+        self.binningChoices = [ self.ybinsLabel, self.ynBinsSpin, self.xbinsLabel, self.xnBinsSpin ]
         
         # Data tab
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
@@ -210,7 +224,12 @@ class Ui_MainWindow(object):
 
         self.plotTypeCombo.addItems( ['Scatter','Line','Hist','Hist2d'] )
         
-        
+        self.userxBinning = False
+        self.userxMax = False
+        self.userxMin = False
+        self.useryBinning = False
+        self.useryMax = False
+        self.useryMin = False        
         self.fileName = ""
         self.df = None
         self.orig_df = None
@@ -222,11 +241,9 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         if self.currentFile is not None:
-            print self.currentFile
             self.treeView.setCurrentIndex( self.fileSystemModel.index( self.currentFile ) )
             self.recursive_expand( index, self.treeView )
             self.on_treeView_doubleClicked(  self.fileSystemModel.index( self.currentFile ) )
-            
         
     def setupCsv(self):
         self.data()
@@ -253,7 +270,19 @@ class Ui_MainWindow(object):
         if self.data() is None: return
         plt.clf()
         col = str( self.xColSelect.currentText() )
-        plt.hist( self.df[ col ].tolist() )
+        if self.userxBinning: bins = self.xnBinsSpin.value()
+        else: bins = 10
+        plt.hist( self.df[ col ].tolist(), bins=bins )
+        if not self.userxBinning: self.xnBinsSpin.setValue( bins )
+        ax = plt.gca()
+        if not self.userxMin:
+            self.xnMinSpin.setValue( ax.get_xlim()[0] )
+        else:
+            plt.xlim([self.xnMinSpin.value(), ax.get_xlim()[1] ] )
+        if not self.userxMax:
+            self.xnMaxSpin.setValue( ax.get_xlim()[1] )
+        else:
+            plt.xlim([ax.get_xlim()[0], self.xnMaxSpin.value() ] )
         plt.xlabel( col )
         self.canvas.draw()
         
@@ -264,10 +293,49 @@ class Ui_MainWindow(object):
         yCol = str( self.yColSelect.currentText() )
         ax = plt.gca()
         ax.scatter( self.df[ xCol ].tolist(), self.df[ yCol ].tolist(), label=xCol + ' v ' + yCol )
+        if self.userxMin or self.userxMax or self.useryMin or self.useryMax:
+            ax.set_xlim( self.xnMinSpin.value(), self.xnMaxSpin.value() )
+            ax.set_ylim( self.ynMinSpin.value(), self.ynMaxSpin.value() )
+        else:
+            self.xnMinSpin.setValue( ax.get_xlim()[0] )
+            self.xnMaxSpin.setValue( ax.get_xlim()[1] )
+            self.ynMinSpin.setValue( ax.get_ylim()[0] )
+            self.ynMaxSpin.setValue( ax.get_ylim()[1] )            
         ax.set_xlabel( xCol )
         ax.set_ylabel( yCol )
         self.canvas.draw()
 
+    def plotHist2d(self):
+        if self.data() is None: return
+        plt.clf()
+        xCol = str( self.xColSelect.currentText() )
+        yCol = str( self.yColSelect.currentText() )
+        ax = plt.gca()
+        if self.userxBinning: bins = self.xnBinsSpin.value()
+        else: bins = 10
+        ax.hist2d( self.df[xCol].tolist(), self.df[yCol].tolist(), bins=bins )
+        if not self.userxBinning: self.xnBinsSpin.setValue( bins )
+        if not self.userxMin:
+            self.xnMinSpin.setValue( ax.get_xlim()[0] )
+        else:
+            ax.set_xlim([self.xnMinSpin.value(), ax.get_xlim()[1] ] )
+        if not self.userxMax:
+            self.xnMaxSpin.setValue( ax.get_xlim()[1] )
+        else:
+            ax.set_xlim([ax.get_xlim()[0], self.xnMaxSpin.value() ] )
+        if not self.useryMin:
+            self.ynMinSpin.setValue( ax.get_ylim()[0] )
+        else:
+            ax.set_ylim([self.ynMinSpin.value(), ax.get_ylim()[1] ] )
+        if not self.useryMax:
+            self.ynMaxSpin.setValue( ax.get_ylim()[1] )
+        else:
+            ax.set_ylim([ax.get_ylim()[0], self.ynMaxSpin.value() ] )
+        plt.xlabel( xCol )
+        plt.ylabel( yCol )
+        self.canvas.draw()
+
+        
     def data(self):
         if self.orig_df is None: return None
         self.filterStr = str(self.filterBox.text())
@@ -325,8 +393,6 @@ class Ui_MainWindow(object):
         
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        #self.btnScatter.setText(_translate("MainWindow", "Scatter", None))
-        #self.btnHist.setText(_translate("MainWindow", "Hist", None))
         self.btnZoom.setText(_translate("MainWindow", "Zoom", None))
         self.btnPlot.setText(_translate("MainWindow", "Draw", None))
         self.btnPan.setText(_translate("MainWindow", "Pan", None))
@@ -346,8 +412,10 @@ class Ui_MainWindow(object):
         pType = self.plotTypeCombo.currentText()
         if pType == 'Scatter': self.plotScatter()
         elif pType == 'Hist': self.plotHist()
+        elif pType == 'Hist2d': self.plotHist2d()
 
     def ChangePlotType(self):
+        self.userBinning = False
         pType = self.plotTypeCombo.currentText()
         if pType == 'Scatter' or pType == 'Line' or pType == 'Hist2d':
             [ x.show() for x in self.yAxisItems ]
@@ -355,9 +423,30 @@ class Ui_MainWindow(object):
             for i in range( self.verticalLayout_2.count() ):
                 if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis: found=True
             if not found: self.verticalLayout_2.addLayout( self.horizontalLayout_yAxis )
+            if pType == 'Scatter' or pType == 'Line':
+                [ x.hide() for x in self.binningChoices ]
+            else:
+                [ x.show() for x in self.binningChoices ]
         else:
+            [ x.show() for x in self.binningChoices ]
             [ x.hide() for x in self.yAxisItems ]
             for i in range( self.verticalLayout_2.count() ):
                 if self.verticalLayout_2.itemAt(i) == self.horizontalLayout_yAxis:
                     self.verticalLayout_2.removeItem( self.horizontalLayout_yAxis )
         self.verticalLayout_2.update()
+
+
+    def XChangeBinning(self): self.userxBinning = True
+    def YChangeBinning(self): self.useryBinning = True
+    def XChangeMax(self): self.userxMax = True
+    def YChangeMax(self): self.useryMax = True
+    def XChangeMin(self): self.userxMin = True
+    def YChangeMin(self): self.useryMin = True
+
+    def ResetUserSelections(self):
+        self.userxMin = False
+        self.useryMin = False
+        self.userxMax = False
+        self.useryMax = False
+        self.userxBinning = False
+        self.useryBinning = False
