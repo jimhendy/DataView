@@ -226,6 +226,11 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
 
+        # Set the default picture
+        import matplotlib.image as mpimg
+        img=mpimg.imread('PandaViz.jpg')
+        plt.imshow(img)
+        
         self.plotTypeCombo.addItems( ['Scatter','Line','Hist','Hist2d'] )
         self.userxBinning = False
         self.userxMax = False
@@ -418,8 +423,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "PandaViz", None))
         import os.path as osp
-        path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'PandaViz.png')
-        print path
+        path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'PandaViz.jpg')
         MainWindow.setWindowIcon(QIcon(path))
         self.btnZoom.setText(_translate("MainWindow", "Zoom", None))
         self.btnPlot.setText(_translate("MainWindow", "Draw", None))

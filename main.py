@@ -1,7 +1,8 @@
-from PyQt4 import QtGui 
+from PyQt4 import QtGui
+from PyQt4 import QtCore
 import sys
 import design
-import os
+import os, time
 
 class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
@@ -9,10 +10,11 @@ class ExampleApp(QtGui.QMainWindow, design.Ui_MainWindow):
         self.setupUi(self) 
 
 def main():
-    app = QtGui.QApplication(sys.argv) 
+    app = QtGui.QApplication(sys.argv)
     form = ExampleApp()                
-    form.show()                        
+    form.show()
     app.exec_()                        
     
     
-if __name__ == '__main__': main()                             
+if __name__ == '__main__':
+    main()                             
