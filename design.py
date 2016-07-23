@@ -416,7 +416,11 @@ class Ui_MainWindow(object):
             self.setupH5()
         
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "PandaViz", None))
+        import os.path as osp
+        path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'PandaViz.png')
+        print path
+        MainWindow.setWindowIcon(QIcon(path))
         self.btnZoom.setText(_translate("MainWindow", "Zoom", None))
         self.btnPlot.setText(_translate("MainWindow", "Draw", None))
         self.btnPan.setText(_translate("MainWindow", "Pan", None))
