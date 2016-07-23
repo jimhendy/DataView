@@ -141,6 +141,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_xAxis.setStretchFactor(self.xnMaxSpin,2)
         self.xTypeCombo = QtGui.QComboBox(self.tab)
         self.xTypeCombo.setObjectName(_fromUtf8("xTypeCombo"))
+        self.xTypeCombo.addItems( ['int','float','str','datetime'] )
+        self.xTypeCombo.currentIndexChanged.connect(self.ChangeXDataType)
         self.horizontalLayout_xAxis.addWidget(self.xTypeCombo)
         self.horizontalLayout_xAxis.setStretchFactor(self.xTypeCombo,2)
         self.verticalLayout_2.addLayout(self.horizontalLayout_xAxis )
@@ -181,6 +183,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_yAxis.setStretchFactor(self.ynMaxSpin,2)
         self.yTypeCombo = QtGui.QComboBox(self.tab)
         self.yTypeCombo.setObjectName(_fromUtf8("yTypeCombo"))
+        self.yTypeCombo.addItems( ['int','float','str','datetime'] )
+        self.yTypeCombo.currentIndexChanged.connect(self.ChangeYDataType)
         self.horizontalLayout_yAxis.addWidget(self.yTypeCombo)
         self.horizontalLayout_yAxis.setStretchFactor(self.yTypeCombo,2)
         #self.verticalLayout_2.addLayout(self.horizontalLayout_yAxis )
@@ -223,7 +227,6 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.plotTypeCombo.addItems( ['Scatter','Line','Hist','Hist2d'] )
-        
         self.userxBinning = False
         self.userxMax = False
         self.userxMin = False
@@ -252,6 +255,7 @@ class Ui_MainWindow(object):
         self.xColSelect.addItems( self.columns )
         self.yColSelect.clear()
         self.yColSelect.addItems( self.columns )
+        self.xTypeCombo.Text = str(self.df[ self.columns[0] ].dtype)
         self.updateTable()
 
     def setupH5(self):
@@ -265,6 +269,25 @@ class Ui_MainWindow(object):
         else:
             self.orig_df = self.hdfStore[ self.chosen_h5key ]
         self.setupCsv()
+
+    def plotLine(self):
+        if self.data() is None: return
+        plt.clf()
+        xCol = str( self.xColSelect.currentText() )
+        yCol = str( self.yColSelect.currentText() )
+        ax = plt.gca()
+        ax.plot( self.df[ xCol ].tolist(), self.df[ yCol ].tolist(), label=xCol + ' v ' + yCol )
+        if self.userxMin or self.userxMax or self.useryMin or self.useryMax:
+            ax.set_xlim( self.xnMinSpin.value(), self.xnMaxSpin.value() )
+            ax.set_ylim( self.ynMinSpin.value(), self.ynMaxSpin.value() )
+        else:
+            self.xnMinSpin.setValue( ax.get_xlim()[0] )
+            self.xnMaxSpin.setValue( ax.get_xlim()[1] )
+            self.ynMinSpin.setValue( ax.get_ylim()[0] )
+            self.ynMaxSpin.setValue( ax.get_ylim()[1] )            
+        ax.set_xlabel( xCol )
+        ax.set_ylabel( yCol )
+        self.canvas.draw()
         
     def plotHist(self):
         if self.data() is None: return
@@ -369,8 +392,9 @@ class Ui_MainWindow(object):
         hh = self.tableView.horizontalHeader()
         hh.setStretchLastSection(True)
         self.tableView.setSortingEnabled(True)
-        self.tableView.sortByColumn(0);
-
+        #self.tableView.sortByColumn(0);
+        tm.sort( 0,  Qt.AscendingOrder )
+        
     def plotZoom(self): self.toolbar.zoom()
     def plotPan(self): self.toolbar.pan()
     def plotHome(self): self.toolbar.home()
@@ -413,7 +437,48 @@ class Ui_MainWindow(object):
         if pType == 'Scatter': self.plotScatter()
         elif pType == 'Hist': self.plotHist()
         elif pType == 'Hist2d': self.plotHist2d()
+        elif pType == 'Line': self.plotLine()
 
+    def ChangeXDataType(self):
+        if self.data() is None: return
+        col = str( self.xColSelect.currentText() )
+        changeType = str( self.xTypeCombo.currentText() )
+        try:
+            if changeType == 'datetime':
+                self.df[ col ] = pd.to_datetime( self.df[ col ])
+            else:
+                exec("self.df[ col ] = self.df[ col ].astype("+ changeType + ")")
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Type Conversion Failed")
+            msg.setWindowTitle("Error")
+            msg.setDetailedText( str(e) )
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+            pass
+        pass
+
+    def ChangeYDataType(self):
+        if self.data() is None: return
+        col = str( self.yColSelect.currentText() )
+        changeType = str( self.yTypeCombo.currentText() )
+        try:
+            if changeType == 'datetime':
+                self.df[ col ] = pd.to_datetime( self.df[ col ])
+            else:
+                exec("self.df[ col ] = self.df[ col ].astype("+ changeType + ")")
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Type Conversion Failed")
+            msg.setWindowTitle("Error")
+            msg.setDetailedText( str(e) )
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+            pass
+        pass
+    
     def ChangePlotType(self):
         self.userBinning = False
         pType = self.plotTypeCombo.currentText()
