@@ -228,9 +228,10 @@ class Ui_MainWindow(object):
 
         # Set the default picture
         import matplotlib.image as mpimg
-        img=mpimg.imread('PandaViz.jpg')
+        img=mpimg.imread(r'H:\stash_projects\DataView\PandaViz.jpg')
         plt.imshow(img)
-        
+
+        self.hdfStore = None
         self.plotTypeCombo.addItems( ['Scatter','Line','Hist','Hist2d'] )
         self.userxBinning = False
         self.userxMax = False
@@ -247,11 +248,16 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+       
         if self.currentFile is not None:
+
+            if len(self.currentFile.split( r':' )) > 1:
+                self.currentFile = self.currentFile.split( r':' )[1][-1] + r':' + self.currentFile.split( r':' )[2] 
+            
             self.treeView.setCurrentIndex( self.fileSystemModel.index( self.currentFile ) )
             self.recursive_expand( index, self.treeView )
-            self.on_treeView_doubleClicked(  self.fileSystemModel.index( self.currentFile ) )
+            #self.on_treeView_doubleClicked(  self.fileSystemModel.index( self.currentFile ) )
+            self.on_treeView_doubleClicked(self.fileSystemModel.index( self.currentFile ) ,self.currentFile )
         
     def setupCsv(self):
         self.data()
@@ -404,10 +410,17 @@ class Ui_MainWindow(object):
     def plotPan(self): self.toolbar.pan()
     def plotHome(self): self.toolbar.home()
         
-    def on_treeView_doubleClicked(self, index ):
-        fileName = str(index.model().filePath(index))
+    def on_treeView_doubleClicked(self, index, fileName = '' ):
+        if fileName == '':
+            fileName = str(index.model().filePath(index))
+            
         if self.fileName == fileName: return
+
+        if self.hdfStore is not None:
+            self.hdfStore.close()
+            
         if fileName.endswith( ".csv" ):
+            self.hdfStore = None
             self.fileName = fileName
             self.isCsv = True
             self.isH5 = False
